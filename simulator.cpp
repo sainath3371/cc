@@ -1,35 +1,46 @@
 #include <bits/stdc++.h>
 #include <iostream>
 #include <fstream>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <vector>
+#include <iomanip>
+#include <stdlib.h>
+#include <cmath>
+#include <bitset>
+#include <stdio.h>
+#include <map>
 using namespace std;
 
 class cache{  
 
     public:
-    vector<vector<unsigned long>> cache_L1;
-    vector<vector<unsigned long>> cache_L2;
-    vector<vector<unsigned long>> valid_L1;
-    vector<vector<unsigned long>> valid_L2;
-    vector<vector<unsigned long>> modified_L1;
-    vector<vector<unsigned long>> modified_L2;
+    vector<vector<int>> cache_L1;
+    vector<vector<int>> cache_L2;
+    vector<vector<int>> valid_L1;
+    vector<vector<int>> valid_L2;
+    vector<vector<int>> modified_L1;
+    vector<vector<int>> modified_L2;
 
     //LRU array for eviction
-    vector<vector<unsigned long>> lru_L1;
-    vector<vector<unsigned long>> lru_L2;
+    vector<vector<int>> lru_L1;
+    vector<vector<int>> lru_L2;
 
-    unsigned long num_sets_L1, num_sets_L2, waylen_L1, waylen_L2;
+    int  num_sets_L1, num_sets_L2, waylen_L1, waylen_L2;
     // All belows variables for the divison of the addr
-    unsigned long tagoffset_L1, tagoffset_L2, blockoffset, indexoffset_L1, indexoffset_L2;
+    int  tagoffset_L1, tagoffset_L2, blockoffset, indexoffset_L1, indexoffset_L2;
 
     
-        cache(unsigned long i1, unsigned long i2, unsigned long i3, unsigned long i4, unsigned long i5){
-            this->waylen_L1 = (unsigned long)i3;
-            this->waylen_L2 = (unsigned long)i5;
-            this->blockoffset = (unsigned long)log2(i1);
-            this->num_sets_L1 = (unsigned long)(i2/(i1*i3));
-            this->num_sets_L2 = (unsigned long)(i4/(i1*i5));
-            this->indexoffset_L1 = (unsigned long)log2(num_sets_L1);
-            this->indexoffset_L2 = (unsigned long)log2(num_sets_L2);
+        cache(int  i1, int  i2, int  i3, int  i4, int  i5){
+            this->waylen_L1 = (int )i3;
+            this->waylen_L2 = (int )i5;
+            this->blockoffset = (int )log2(i1);
+            this->num_sets_L1 = (int )(i2/(i1*i3));
+            this->num_sets_L2 = (int )(i4/(i1*i5));
+            this->indexoffset_L1 = (int )log2(num_sets_L1);
+            this->indexoffset_L2 = (int )log2(num_sets_L2);
             this->tagoffset_L1 = 32 - this->indexoffset_L1 - this->blockoffset;
             this->tagoffset_L2 = 32 - this->indexoffset_L2 - this->blockoffset;
             //intialise cache_L1, cache_L2
@@ -42,13 +53,13 @@ class cache{
             this->valid_L2.resize(waylen_L2);
             this->modified_L2.resize(waylen_L2);
 
-            for(unsigned long i=0; i<waylen_L1;i++){
+            for(int  i=0; i<waylen_L1;i++){
                 this->cache_L1[i].resize(num_sets_L1);
                 this->valid_L1[i].resize(num_sets_L1);
                 this->modified_L1[i].resize(num_sets_L1);
             }
 
-            for(unsigned long i=0; i<waylen_L2;i++){
+            for(int  i=0; i<waylen_L2;i++){
                 this->cache_L2[i].resize(num_sets_L2);  
                 this->valid_L2[i].resize(num_sets_L2);
                 this->modified_L2[i].resize(num_sets_L2);
@@ -56,11 +67,11 @@ class cache{
 
             //lru
             this->lru_L1.resize(num_sets_L1);
-            for(unsigned long i=0; i< num_sets_L1; i++)
+            for(int  i=0; i< num_sets_L1; i++)
                 this->lru_L1[i].resize(waylen_L1);
 
             this->lru_L2.resize(num_sets_L2);
-            for(unsigned long i=0; i< num_sets_L2; i++)
+            for(int  i=0; i< num_sets_L2; i++)
                 this->lru_L2[i].resize(waylen_L2);
             
         }
@@ -90,17 +101,17 @@ class cache{
 
 };
 
-unsigned long iswayavailable(vector<vector<unsigned long>> &valid_L, unsigned long &index_L, unsigned long &L_ways){
-    for(unsigned long i=0; i<L_ways; i++){  
+int  iswayavailable(vector<vector<int >> &valid_L, int  &index_L, int  &L_ways){
+    for(int  i=0; i<L_ways; i++){  
         if(valid_L[i][index_L] ==0)
             return (i+1);
     }
     return 0;
 }
 
-unsigned long lru_evict(vector<vector<unsigned long>> &lru_L, unsigned long &index_L, unsigned long &L_ways){
-    unsigned long evict_way;
-    for(unsigned long i=0; i<L_ways; i++){
+int  lru_evict(vector<vector<int >> &lru_L, int  &index_L, int  &L_ways){
+    int  evict_way;
+    for(int  i=0; i<L_ways; i++){
         if(lru_L[index_L][i]==4)
             evict_way = i;
         else
@@ -110,23 +121,27 @@ unsigned long lru_evict(vector<vector<unsigned long>> &lru_L, unsigned long &ind
     return evict_way;//return the way which will be evicted evict.
 }
 
-void add_to_cache(vector<vector<unsigned long>> &cache_L, vector<vector<unsigned long>> &valid_L, unsigned long &index_L, unsigned long way, unsigned long &tag){
+void add_to_cache(vector<vector<int >> &cache_L, vector<vector<int >> &valid_L, int  &index_L, int  way, int  &tag){
     cache_L[way][index_L] = tag;
     valid_L[way][index_L] = 1;         
 }
 
 
+int main(int argc, char** argv){
 
-
-int main(int argc, char* argv[]){
-
-    unsigned long L1_reads=0, L1_read_miss=0, L1_writes=0, L1_write_miss=0;
-
-    cache cache_obj(strtol(argv[1], NULL, 10), strtol(argv[2], NULL, 10), strtol(argv[3], NULL, 10), strtol(argv[4], NULL, 10), strtol(argv[5], NULL, 10));
-
+    int  L1_reads=0, L1_read_miss=0, L1_writes=0, L1_write_miss=0;
     char * ptr;
-    unsigned long L1_ways = strtol(argv[3], &ptr, 10);
-    unsigned long L2_ways = strtol(argv[5], &ptr, 10);
+    cout<<argv[1];
+    int  s1 = stoi(argv[1]);
+    int  s2 = stoi(argv[2]);
+    int  s3 = stoi(argv[3]);
+    int  s4 = stoi(argv[4]);
+    int  s5 = stoi(argv[5]);
+
+    cache cache_obj(s1,s2,s3,s4,s5);
+
+    int  L1_ways = stoi(argv[3]);
+    int  L2_ways = stoi(argv[5]);
 
     ifstream traces;
     traces.open(argv[6]);
@@ -148,16 +163,16 @@ int main(int argc, char* argv[]){
 
             vector<string> offsets = cache_obj.parser(addr_bits);
 
-            unsigned long index_L1= strtol(offsets[1].c_str(), &ptr, 2);
-            unsigned long index_L2 = strtol(offsets[4].c_str(), &ptr, 2);
+            int  index_L1= stoi(offsets[1]);
+            int  index_L2 = stoi(offsets[4]);
             
-            unsigned long  tag_L1= strtol(offsets[0].c_str(), &ptr, 2);
-            unsigned long  tag_L2= strtol(offsets[3].c_str(), &ptr, 2);
+            int   tag_L1= stoi(offsets[0]);
+            int   tag_L2= stoi(offsets[3]);
 
-            unsigned long in_L1=0, in_L2 =0;
+            int  in_L1=0, in_L2 =0;
 
             //check the adrr in L1.
-            for(unsigned long i =0; i<L1_ways; i++){
+            for(int  i =0; i<L1_ways; i++){
                 if((cache_obj.cache_L1[i][index_L1]==tag_L1)&&(cache_obj.valid_L1[i][index_L1]==1)){
                     in_L1 = 1;
                     break;
@@ -165,7 +180,7 @@ int main(int argc, char* argv[]){
             }
             //check the adrr in L2
             if(in_L1 == 0){
-                for(unsigned long i=0; i<L2_ways; i++){
+                for(int  i=0; i<L2_ways; i++){
                     if((cache_obj.cache_L2[i][index_L2]==tag_L2)&&(cache_obj.valid_L2[i][index_L2]==1)){
                         in_L2 = 1;
                         break;
@@ -181,8 +196,8 @@ int main(int argc, char* argv[]){
                     //get data from RAM
                     //check if ways in L2 are available.
                     L1_read_miss++;
-                    unsigned long free_way = iswayavailable(cache_obj.valid_L2, index_L2, L2_ways);
-                    unsigned long evict_way;
+                    int  free_way = iswayavailable(cache_obj.valid_L2, index_L2, L2_ways);
+                    int  evict_way;
 
                     //update in L2.
                     if(free_way==0){
@@ -191,7 +206,7 @@ int main(int argc, char* argv[]){
                         add_to_cache(cache_obj.cache_L2, cache_obj.valid_L2, index_L2, evict_way, tag_L2);
                     }
                     else{
-                        for(unsigned long i=0; i<free_way-1; i++){
+                        for(int  i=0; i<free_way-1; i++){
                             cache_obj.lru_L2[index_L2][i]++;
                         }
                         cache_obj.lru_L2[index_L2][free_way-1] = 1;
@@ -208,8 +223,8 @@ int main(int argc, char* argv[]){
                         add_to_cache(cache_obj.cache_L1, cache_obj.valid_L1, index_L1, evict_way, tag_L1);
 
                         if(cache_obj.modified_L1[evict_way][index_L1]==1){
-                            unsigned long temp_tag = strtol(temp[0].c_str(), &ptr, 2);
-                            unsigned long temp_index = strtol(temp[1].c_str(), &ptr, 2);
+                            int  temp_tag = stoi(temp[0]);
+                            int  temp_index = stoi(temp[1]);
                             free_way = iswayavailable(cache_obj.valid_L2, temp_index, L2_ways);
                             if(free_way==0){
                                 evict_way = lru_evict(cache_obj.lru_L2, temp_index, L2_ways);
@@ -217,7 +232,7 @@ int main(int argc, char* argv[]){
                                 add_to_cache(cache_obj.cache_L2, cache_obj.valid_L2, temp_index, evict_way, temp_tag);
                             }
                             else{
-                                for(unsigned long i=0; i<free_way-1; i++){
+                                for(int  i=0; i<free_way-1; i++){
                                     cache_obj.lru_L2[temp_index][i]++;
                                 }
                                 cache_obj.lru_L2[temp_index][free_way-1] == 1;
@@ -228,7 +243,7 @@ int main(int argc, char* argv[]){
                         cache_obj.modified_L1[evict_way][index_L1] = 0;
                     }
                     else{
-                        for(unsigned long i=0; i<free_way-1; i++){
+                        for(int  i=0; i<free_way-1; i++){
                             cache_obj.lru_L1[index_L1][i]++;
                         }
                         cache_obj.lru_L1[index_L1][free_way-1] == 1;
@@ -238,8 +253,8 @@ int main(int argc, char* argv[]){
                 }//update only L1
                 else if(in_L2 == 1 && in_L1 == 0){
                     L1_read_miss;
-                    unsigned long free_way = iswayavailable(cache_obj.valid_L1, index_L1, L1_ways);
-                    unsigned long evict_way;
+                    int  free_way = iswayavailable(cache_obj.valid_L1, index_L1, L1_ways);
+                    int  evict_way;
 
                     if(free_way==0){
                         evict_way = lru_evict(cache_obj.lru_L1, index_L1, L1_ways);
@@ -249,8 +264,8 @@ int main(int argc, char* argv[]){
                         add_to_cache(cache_obj.cache_L1, cache_obj.valid_L1, index_L1, evict_way, tag_L1);
 
                         if(cache_obj.modified_L1[evict_way][index_L1]==1){
-                            unsigned long temp_tag = strtol(temp[0].c_str(), &ptr, 2);
-                            unsigned long temp_index = strtol(temp[1].c_str(), &ptr, 2);
+                            int  temp_tag = stoi(temp[0]);
+                            int  temp_index = stoi(temp[1]);
                             free_way = iswayavailable(cache_obj.valid_L2, temp_index, L2_ways);
                             if(free_way==0){
                                 evict_way = lru_evict(cache_obj.lru_L2, temp_index, L2_ways);
@@ -258,7 +273,7 @@ int main(int argc, char* argv[]){
                                 add_to_cache(cache_obj.cache_L2, cache_obj.valid_L2, temp_index, evict_way, temp_tag);
                             }
                             else{
-                                for(unsigned long i=0; i<free_way-1; i++){
+                                for(int  i=0; i<free_way-1; i++){
                                     cache_obj.lru_L2[temp_index][i]++;
                                 }
                                 cache_obj.lru_L2[temp_index][free_way-1] == 1;
@@ -269,7 +284,7 @@ int main(int argc, char* argv[]){
                         cache_obj.modified_L1[evict_way][index_L1] = 0;
                     }
                     else{
-                        for(unsigned long i=0; i<free_way-1; i++){
+                        for(int  i=0; i<free_way-1; i++){
                             cache_obj.lru_L1[index_L1][i]++;
                         }
                         cache_obj.lru_L1[index_L1][free_way-1] == 1;
@@ -286,8 +301,8 @@ int main(int argc, char* argv[]){
                 if(in_L1==0&&in_L2==0){
                     //get data from RAM
                     //check if ways in L2 are available.
-                    unsigned long free_way = iswayavailable(cache_obj.valid_L2, index_L2, L2_ways);
-                    unsigned long evict_way;
+                    int  free_way = iswayavailable(cache_obj.valid_L2, index_L2, L2_ways);
+                    int  evict_way;
 
                     //update in L2.
                     if(free_way==0){
@@ -296,7 +311,7 @@ int main(int argc, char* argv[]){
                         add_to_cache(cache_obj.cache_L2, cache_obj.valid_L2, index_L2, evict_way, tag_L2);
                     }
                     else{
-                        for(unsigned long i=0; i<free_way-1; i++){
+                        for(int  i=0; i<free_way-1; i++){
                             cache_obj.lru_L2[index_L2][i]++;
                         }
                         cache_obj.lru_L2[index_L2][free_way-1] = 1;
@@ -313,8 +328,8 @@ int main(int argc, char* argv[]){
                         add_to_cache(cache_obj.cache_L1, cache_obj.valid_L1, index_L1, evict_way, tag_L1);
 
                         if(cache_obj.modified_L1[evict_way][index_L1]==1){
-                            unsigned long temp_tag = strtol(temp[0].c_str(), &ptr, 2);
-                            unsigned long temp_index = strtol(temp[1].c_str(), &ptr, 2);
+                            int  temp_tag = stoi(temp[0]);
+                            int  temp_index = stoi(temp[1]);
                             free_way = iswayavailable(cache_obj.valid_L2, temp_index, L2_ways);
                             if(free_way==0){
                                 evict_way = lru_evict(cache_obj.lru_L2, temp_index, L2_ways);
@@ -322,7 +337,7 @@ int main(int argc, char* argv[]){
                                 add_to_cache(cache_obj.cache_L2, cache_obj.valid_L2, temp_index, evict_way, temp_tag);
                             }
                             else{
-                                for(unsigned long i=0; i<free_way-1; i++){
+                                for(int  i=0; i<free_way-1; i++){
                                     cache_obj.lru_L2[temp_index][i]++;
                                 }
                                 cache_obj.lru_L2[temp_index][free_way-1] == 1;
@@ -334,7 +349,7 @@ int main(int argc, char* argv[]){
                         cache_obj.modified_L1[evict_way][index_L1] = 1;
                     }
                     else{
-                        for(unsigned long i=0; i<free_way-1; i++){
+                        for(int  i=0; i<free_way-1; i++){
                             cache_obj.lru_L1[index_L1][i]++;
                         }
                         cache_obj.lru_L1[index_L1][free_way-1] == 1;
@@ -345,8 +360,8 @@ int main(int argc, char* argv[]){
                 }//update only L1
                 else if(in_L2 == 1 && in_L1 == 0){
                     
-                    unsigned long free_way = iswayavailable(cache_obj.valid_L1, index_L1, L1_ways);
-                    unsigned long evict_way;
+                    int  free_way = iswayavailable(cache_obj.valid_L1, index_L1, L1_ways);
+                    int  evict_way;
 
                     if(free_way==0){
                         evict_way = lru_evict(cache_obj.lru_L1, index_L1, L1_ways);
@@ -356,8 +371,8 @@ int main(int argc, char* argv[]){
                         add_to_cache(cache_obj.cache_L1, cache_obj.valid_L1, index_L1, evict_way, tag_L1);
 
                         if(cache_obj.modified_L1[evict_way][index_L1]==1){
-                            unsigned long temp_tag = strtol(temp[0].c_str(), &ptr, 2);
-                            unsigned long temp_index = strtol(temp[1].c_str(), &ptr, 2);
+                            int  temp_tag = stoi(temp[0]);
+                            int  temp_index = stoi(temp[1]);
                             free_way = iswayavailable(cache_obj.valid_L2, temp_index, L2_ways);
                             if(free_way==0){
                                 evict_way = lru_evict(cache_obj.lru_L2, temp_index, L2_ways);
@@ -365,7 +380,7 @@ int main(int argc, char* argv[]){
                                 add_to_cache(cache_obj.cache_L2, cache_obj.valid_L2, temp_index, evict_way, temp_tag);
                             }
                             else{
-                                for(unsigned long i=0; i<free_way-1; i++){
+                                for(int  i=0; i<free_way-1; i++){
                                     cache_obj.lru_L2[temp_index][i]++;
                                 }
                                 cache_obj.lru_L2[temp_index][free_way-1] == 1;
@@ -376,7 +391,7 @@ int main(int argc, char* argv[]){
                         cache_obj.modified_L1[evict_way][index_L1] = 1;
                     }
                     else{
-                        for(unsigned long i=0; i<free_way-1; i++){
+                        for(int  i=0; i<free_way-1; i++){
                             cache_obj.lru_L1[index_L1][i]++;
                         }
                         cache_obj.lru_L1[index_L1][free_way-1] == 1;
@@ -385,7 +400,7 @@ int main(int argc, char* argv[]){
                     }
                 }
                 else{
-                    for(unsigned long i =0; i<L1_ways; i++){
+                    for(int  i =0; i<L1_ways; i++){
                         if((cache_obj.cache_L1[i][index_L1]==tag_L1)&&(cache_obj.valid_L1[i][index_L1]==1)){
                             cache_obj.modified_L1[i][index_L1] = 1;
                             break;
